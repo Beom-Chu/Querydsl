@@ -1,5 +1,6 @@
 package com.kbs.querydsl.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -46,6 +47,9 @@ class MemberTest {
       System.out.println("[[[member : " + member);
       System.out.println("[[[member.team" + member.getTeam());
     }
+    
+    assertThat(members.size()).isEqualTo(4);
+    
   }
 
 }

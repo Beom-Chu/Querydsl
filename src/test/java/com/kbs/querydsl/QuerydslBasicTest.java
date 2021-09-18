@@ -1,7 +1,6 @@
 package com.kbs.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +20,8 @@ class QuerydslBasicTest {
   @PersistenceContext
   private EntityManager em;
   
+  JPAQueryFactory queryFactory; //JPAQueryFactory를 필드로
+  
   @BeforeEach
   public void before() {
     Team teamA = new Team("teamA");
@@ -32,6 +33,7 @@ class QuerydslBasicTest {
     Member member2 = new Member("member2", 20, teamA);
     Member member3 = new Member("member3", 30, teamB);
     Member member4 = new Member("member4", 40, teamB);
+    
     em.persist(member1);
     em.persist(member2);
     em.persist(member3);
@@ -57,8 +59,11 @@ class QuerydslBasicTest {
   @DisplayName("Querydsl test")
   public void startQuerydsl() {
     
-    JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-    QMember member = QMember.member;
+//    JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+    queryFactory = new JPAQueryFactory(em);
+    
+//    QMember member = new QMember("m"); //별칭 직접 지정 방식
+    QMember member = QMember.member;  //기본 인스턴스 사용
     
     Member findMember = queryFactory
         .select(member)
