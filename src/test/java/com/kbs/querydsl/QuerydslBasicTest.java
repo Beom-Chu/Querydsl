@@ -13,6 +13,9 @@ import com.kbs.querydsl.entity.QMember;
 import com.kbs.querydsl.entity.Team;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+//기본 인스턴스를 static import와 함께 사용
+import static com.kbs.querydsl.entity.QMember.*;
+
 @SpringBootTest
 @Transactional
 class QuerydslBasicTest {
@@ -56,15 +59,41 @@ class QuerydslBasicTest {
   }
 
   @Test
-  @DisplayName("Querydsl test")
   public void startQuerydsl() {
     
-//    JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-    queryFactory = new JPAQueryFactory(em);
+    JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+    QMember m = new QMember("m");
+    Member findMember = queryFactory
+        .select(m)
+        .from(m)
+        .where(m.username.eq("member1"))// 파라미터 바인딩 처리
+        .fetchOne();
     
-//    QMember member = new QMember("m"); //별칭 직접 지정 방식
-    QMember member = QMember.member;  //기본 인스턴스 사용
+    assertThat(findMember.getUsername()).isEqualTo("member1");
+  }
+
+  @Test
+  public void startQuerydsl2() {
     
+    //JPAQueryFactory를 필드로
+    
+    QMember m = new QMember("m");
+    Member findMember = queryFactory  
+        .select(m)
+        .from(m)
+        .where(m.username.eq("member1"))
+        .fetchOne();
+    
+    assertThat(findMember.getUsername()).isEqualTo("member1");
+  }
+  
+  @Test
+  public void startQuerydsl3() {
+
+//    QMember qMember = new QMember("m"); //별칭 직접 지정
+//    QMember qMember = QMember.member; //기본 인스턴스 사용
+    
+    //기본 인스턴스를 static import와 함께 사용
     Member findMember = queryFactory
         .select(member)
         .from(member)
