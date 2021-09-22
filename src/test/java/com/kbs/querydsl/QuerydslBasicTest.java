@@ -27,6 +27,9 @@ class QuerydslBasicTest {
   
   @BeforeEach
   public void before() {
+    
+    queryFactory = new JPAQueryFactory(em);
+    
     Team teamA = new Team("teamA");
     Team teamB = new Team("teamB");
     em.persist(teamA);
@@ -41,6 +44,9 @@ class QuerydslBasicTest {
     em.persist(member2);
     em.persist(member3);
     em.persist(member4);
+    
+    em.flush();
+    em.clear();
   }
 
   @Test
