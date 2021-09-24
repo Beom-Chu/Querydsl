@@ -1,9 +1,11 @@
 package com.kbs.querydsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.entity.Member;
 import com.kbs.querydsl.entity.QMember;
 import com.kbs.querydsl.entity.Team;
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 //기본 인스턴스를 static import와 함께 사용
@@ -49,6 +52,7 @@ class QuerydslBasicTest {
     em.clear();
   }
 
+  @Disabled
   @Test
   @DisplayName("JPQL test")
   public void startJPQL() {
@@ -64,6 +68,7 @@ class QuerydslBasicTest {
     assertThat(findMember.getUsername()).isEqualTo("member1");
   }
 
+  @Disabled
   @Test
   public void startQuerydsl() {
     
@@ -78,6 +83,7 @@ class QuerydslBasicTest {
     assertThat(findMember.getUsername()).isEqualTo("member1");
   }
 
+  @Disabled
   @Test
   public void startQuerydsl2() {
     
@@ -93,6 +99,7 @@ class QuerydslBasicTest {
     assertThat(findMember.getUsername()).isEqualTo("member1");
   }
   
+  @Disabled
   @Test
   public void startQuerydsl3() {
 
@@ -107,5 +114,76 @@ class QuerydslBasicTest {
         .fetchOne();
     
     assertThat(findMember.getUsername()).isEqualTo("member1");
+  }
+  
+  @Disabled
+  @Test
+  public void search() {
+    
+    Member findMember = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1")
+            .and(member.age.eq(10)))
+        .fetchOne();
+        
+    assertThat(findMember.getUsername()).isEqualTo("member1");
+    
+    List<Member> fetch = queryFactory
+    .selectFrom(member)
+    .where(
+         member.username.eq("member1")        //username = 'member1'
+        ,member.username.ne("member1")        //username != 'member1'
+        ,member.username.eq("member1").not()  //username != 'member1'
+        
+        ,member.username.isNotNull()  //username is not null
+        
+        ,member.age.in(10,20)       //age in (10,20)
+        ,member.age.notIn(10,20)    //age not in (10,20)
+        ,member.age.between(10, 30) //age between 10 and 30
+        
+        ,member.age.goe(30) //age >= 30
+        ,member.age.gt(30)  //age > 30
+        ,member.age.loe(30) //age <= 30
+        ,member.age.lt(30)  //age < 30
+        
+        ,member.username.like("member%")      //username like 'member%'
+        ,member.username.contains("member")   //username like '%member%'
+        ,member.username.startsWith("member") //username like 'member%'
+
+        ).fetch();
+    // 조건절을 .and() 대신에 , 콤마로 사용 가능
+    
+    assertThat(fetch.size()).isEqualTo(0);
+  }
+  
+  
+  @Test
+  public void searchResultTest() {
+    
+    //List
+    List<Member> fetch = queryFactory
+      .selectFrom(member)
+      .fetch();
+    
+    //단건
+    Member fetchOne = queryFactory
+      .selectFrom(member)
+      .where(member.id.eq(1L))
+      .fetchOne();
+    
+    //처음 한 건 조회
+    Member fetchFirst = queryFactory
+      .selectFrom(member)
+      .fetchFirst();
+    
+    //페이징에서 사용
+    QueryResults<Member> fetchResults = queryFactory
+      .selectFrom(member)
+      .fetchResults();
+    
+    //count 쿼리로 변경
+    long fetchCount = queryFactory
+      .selectFrom(member)
+      .fetchCount();
   }
 }
