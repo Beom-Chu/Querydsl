@@ -4,7 +4,6 @@ package com.kbs.querydsl;
 import static com.kbs.querydsl.entity.QMember.member;
 import static com.kbs.querydsl.entity.QTeam.team;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.from;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -13,10 +12,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.entity.Member;
 import com.kbs.querydsl.entity.QMember;
-import com.kbs.querydsl.entity.QTeam;
 import com.kbs.querydsl.entity.Team;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
@@ -285,6 +284,7 @@ class QuerydslBasicTest {
   /**
    * 팀의 이름과 각 팀의 평균 연령을 구해라.
    */
+  @Disabled
   @Test
   public void group() {
     
@@ -303,5 +303,54 @@ class QuerydslBasicTest {
     assertThat(teamB.get(team.name)).isEqualTo("teamB");
     assertThat(teamB.get(member.age.avg())).isEqualTo(35);
     
+  }
+  
+  /**
+   * 팀 A에 소속된 모든 회원
+   */
+  @Disabled
+  @Test
+  public void join() {
+    
+    List<Member> result = queryFactory
+      .selectFrom(member)
+      .join(member.team, team)
+//      .innerJoin(member.team,team)
+//      .leftJoin(member.team, team)
+//      .rightJoin(member.team, team)
+      .where(team.name.eq("teamA"))
+      .fetch();
+    
+    //join(), innerJoin() : 내부조인
+    //leftJoin() : left outer join
+    //rightJoin() : right outer join
+    
+    assertThat(result)
+      .extracting("username")
+      .containsExactly("member1","member2");
+  }
+  
+  
+  /**
+   * 세타 조인(연관관계가 없는 필드로 조인)
+   * 회원의 이름이 팀 이름과 같은 회원 조회
+   */
+//  @Disabled
+  @Test
+//  @Rollback(value = false)
+  public void theta_join() {
+    
+    em.persist(new Member("teamA"));
+    em.persist(new Member("teamB"));
+    
+    List<Member> result = queryFactory
+      .select(member)
+      .from(member, team)
+      .where(member.username.eq(team.name))
+      .fetch();
+    
+    assertThat(result)
+      .extracting("username")
+      .containsExactly("teamA", "teamB");
   }
 }
