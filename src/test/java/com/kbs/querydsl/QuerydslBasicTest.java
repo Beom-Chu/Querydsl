@@ -6,7 +6,9 @@ import static com.kbs.querydsl.entity.QTeam.team;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +29,9 @@ class QuerydslBasicTest {
 
   @PersistenceContext
   private EntityManager em;
+  
+  @PersistenceUnit
+  private EntityManagerFactory emf;
   
   JPAQueryFactory queryFactory; //JPAQueryFactory를 필드로
   
@@ -361,6 +366,7 @@ class QuerydslBasicTest {
    * JPQL: SELECT m, t FROM Member m LEFT JOIN m.team t on t.name = 'teamA'
    * SQL: SELECT m.*, t.* FROM Member m LEFT JOIN Team t ON m.TEAM_ID=t.id and t.name='teamA'
    */
+  @Disabled
   @Test
   public void join_on_filtering() {
     
@@ -382,6 +388,7 @@ class QuerydslBasicTest {
    * JPQL: SELECT m, t FROM Member m LEFT JOIN Team t on m.username = t.name
    * SQL: SELECT m.*, t.* FROM Member m LEFT JOIN Team t ON m.username = t.name
    */
+  @Disabled
   @Test
   public void join_on_no_relation() {
     
@@ -397,5 +404,43 @@ class QuerydslBasicTest {
     for(Tuple tuple : result) {
       System.out.println("join_on_no_relation : "+tuple);
     }
+  }
+  
+  
+  
+  /**
+   * 페치조인 미적용
+   */
+  @Test
+  public void fetchJoinNo() {
+    em.flush();
+    em.clear();
+    
+    Member result = queryFactory
+      .selectFrom(member)
+      .where(member.username.eq("member1"))
+      .fetchOne();
+    
+    boolean loaded = emf.getPersistenceUnitUtil().isLoaded(result.getTeam());
+    
+    assertThat(loaded).as("페치 조인 미적용").isFalse();
+  }
+  /**
+   * 페치조인 적용
+   */
+  @Test
+  public void fetchJoinUse() {
+    em.flush();
+    em.clear();
+    
+    Member result = queryFactory
+      .selectFrom(member)
+      .join(member.team, team).fetchJoin()
+      .where(member.username.eq("member1"))
+      .fetchOne();
+    
+    boolean loaded = emf.getPersistenceUnitUtil().isLoaded(result.getTeam());
+    
+    assertThat(loaded).as("페치 조인 적용").isTrue();
   }
 }
