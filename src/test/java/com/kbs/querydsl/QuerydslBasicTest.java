@@ -22,6 +22,8 @@ import com.kbs.querydsl.entity.QMember;
 import com.kbs.querydsl.entity.Team;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -527,6 +529,7 @@ class QuerydslBasicTest {
   /**
    * select절에 subquery
    */
+  @Disabled
   @Test
   public void selectSubQuery() {
     QMember memberSub = new QMember("memberSub");
@@ -545,5 +548,66 @@ class QuerydslBasicTest {
     }
   }
 
-  
+  /**
+   * case문 : 단순 조건
+   */
+  @Disabled
+  @Test
+  public void basicCase() {
+    
+    List<String> result = queryFactory
+      .select(member.age.when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+      .from(member)
+      .fetch();
+    
+    for(String s : result) {
+      System.out.println(s);
+    }
+  }
+  /**
+   * case문 : 복잡한 조건
+   */
+  @Disabled
+  @Test
+  public void complexCase() {
+    List<String> result = queryFactory
+      .select(new CaseBuilder()
+              .when(member.age.between(0, 20)).then("0~20살")
+              .when(member.age.between(21, 30)).then("21~30살")
+              .otherwise("기타"))
+      .from(member)
+      .fetch();
+    
+    for(String s : result) {
+      System.out.println(s);
+    }
+  }
+  /**
+   * case문 : order by에서 case 문 함께 사용
+   */
+  @Test
+  public void orderByCase() {
+    
+    NumberExpression<Integer> rankPath = new CaseBuilder()
+      .when(member.age.between(0, 20)).then(2)
+      .when(member.age.between(21, 30)).then(1)
+      .otherwise(3);
+    
+    List<Tuple> result = queryFactory
+      .select(member.username, member.age, rankPath)
+      .from(member)
+      .orderBy(rankPath.desc())
+      .fetch();
+    
+    for(Tuple tuple : result) {
+      System.out.println(String.format("username: %s, age: %s, rank: %s"
+                            , tuple.get(member.username)
+                            , tuple.get(member.age)
+                            , tuple.get(rankPath)
+                          )
+          );
+    }
+  }
 }
