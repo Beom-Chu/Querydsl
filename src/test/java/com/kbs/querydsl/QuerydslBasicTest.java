@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.dto.MemberDto;
+import com.kbs.querydsl.dto.QMemberDto;
 import com.kbs.querydsl.dto.UserDto;
 import com.kbs.querydsl.entity.Member;
 import com.kbs.querydsl.entity.QMember;
@@ -708,6 +709,7 @@ class QuerydslBasicTest {
   /**
    * querydsl로 DTO 조회
    */
+  @Disabled
   @Test
   public void findDtoQueryDsl() {
     
@@ -765,6 +767,23 @@ class QuerydslBasicTest {
       .fetch();
     
     for (MemberDto memberDto : result4) {
+      System.out.println(memberDto);
+    }
+  }
+  
+  
+  /**
+   * @QueryProjection 활용
+   */
+  @Test
+  public void findDtoByQueryProjection() {
+    
+    List<MemberDto> result = queryFactory
+      .select(new QMemberDto(member.username, member.age))
+      .from(member)
+      .fetch();
+    
+    for (MemberDto memberDto : result) {
       System.out.println(memberDto);
     }
   }
