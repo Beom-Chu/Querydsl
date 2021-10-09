@@ -832,6 +832,7 @@ class QuerydslBasicTest {
   /**
    * 동적쿼리 - Where 다중 파라미터 사용
    */
+  @Disabled
   @Test
   public void dynamicQueryWhereParam() {
     
@@ -865,4 +866,53 @@ class QuerydslBasicTest {
     return usernameEq(userNameCond).and(ageEq(ageCond));
   }
   
+  
+  
+  /**
+   * 수정, 삭제 벌크 연산
+   */
+  @Disabled
+  @Test
+  public void bulkUpdate() {
+    
+    //쿼리 한번에 대량 데이터 수정
+    long count = queryFactory
+      .update(member)
+      .set(member.username, "비회원")
+      .where(member.age.lt(28))
+      .execute();
+    
+    List<Member> result = queryFactory
+      .selectFrom(member)
+      .fetch();
+    
+    for (Member m : result) {
+      System.out.println(m);
+    }
+    
+    /*
+     * 영속성 컨텍스트에 엔티티를 가지고 있는 상태에서 벌크연산을 수행한 경우
+     * DB에는 수정이 되지만 영속성 컨텍스트에는 수정이 되기 전의 데이터를 가지고 있으므로
+     * flush, clear를 해줘야 함
+     */
+  }
+  @Disabled
+  @Test
+  public void bulkAdd() {
+    
+    //기존 숫자에 1 더하기
+    long count = queryFactory
+      .update(member)
+      .set(member.age, member.age.add(1))
+      .execute();
+  }
+  @Test
+  public void bulkDelete() {
+    
+    //쿼리 한버에 대량 데이터 삭제
+    long count = queryFactory
+      .delete(member)
+      .where(member.age.lt(28))
+      .execute();
+  }
 }
