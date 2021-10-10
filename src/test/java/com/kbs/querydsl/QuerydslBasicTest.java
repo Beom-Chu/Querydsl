@@ -906,6 +906,7 @@ class QuerydslBasicTest {
       .set(member.age, member.age.add(1))
       .execute();
   }
+  @Disabled
   @Test
   public void bulkDelete() {
     
@@ -914,5 +915,35 @@ class QuerydslBasicTest {
       .delete(member)
       .where(member.age.lt(28))
       .execute();
+  }
+  
+  
+  /**
+   * SQL Function 호출
+   */
+  @Test
+  public void sqlFunction() {
+    List<String> result = queryFactory
+      .select(Expressions.stringTemplate("function('replace',{0}, {1}, {2})"
+          , member.username , "member", "M"))
+      .from(member)
+      .fetch();
+    
+    for (String s : result) {
+      System.out.println(s);
+    }
+    
+    
+    //lower 같은 ansi 표준 함수들은 querydsl이 상당부분 내장
+    List<String> result2 = queryFactory
+        .select(member.username)
+        .from(member)
+//        .where(member.username.eq(Expressions.stringTemplate("function('lower',{0})", member.username)))
+        .where(member.username.eq(member.username.lower()))
+        .fetch();
+      
+      for (String s : result2) {
+        System.out.println(s);
+      }
   }
 }
