@@ -3,6 +3,7 @@ package com.kbs.querydsl.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import javax.persistence.EntityManager;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +20,7 @@ class MemberJpaRepositoryTest {
   @Autowired
   MemberJpaRepository memberJpaRepository;
   
+  @Disabled
   @Test
   void basicTest() {
     
@@ -39,4 +41,16 @@ class MemberJpaRepositoryTest {
     
   }
 
+  
+  @Test
+  public void querydslTest() {
+    Member member = new Member("member1", 10);
+    memberJpaRepository.save(member);
+    
+    List<Member> result1 = memberJpaRepository.findAll_Querydsl();
+    assertThat(result1).containsExactly(member);
+    
+    List<Member> result2 = memberJpaRepository.findByusername_Querydsl("member1");
+    assertThat(result2).containsExactly(member);
+  }
 }

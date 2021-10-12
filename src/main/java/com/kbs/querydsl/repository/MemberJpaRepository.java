@@ -1,10 +1,12 @@
 package com.kbs.querydsl.repository;
 
+import static com.kbs.querydsl.entity.QMember.member;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 import com.kbs.querydsl.entity.Member;
+import com.querydsl.core.QueryFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
@@ -15,11 +17,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 public class MemberJpaRepository {
 
   private final EntityManager em;
-  private final JPAQueryFactory jpaQueryFactory;
+  private final JPAQueryFactory queryFactory;
 
   public MemberJpaRepository(EntityManager em) {
     this.em = em;
-    this.jpaQueryFactory = new JPAQueryFactory(em);
+    this.queryFactory = new JPAQueryFactory(em);
   }
 
 
@@ -42,4 +44,18 @@ public class MemberJpaRepository {
           .setParameter("username", username)
           .getResultList();
   }
+  
+  
+  public List<Member> findAll_Querydsl(){
+    return queryFactory
+         .selectFrom(member).fetch();
+  }
+  
+  public List<Member> findByusername_Querydsl(String username) {
+    return queryFactory
+        .selectFrom(member)
+        .where(member.username.eq(username))
+        .fetch();
+  }
+  
 }
