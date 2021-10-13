@@ -1,12 +1,17 @@
 package com.kbs.querydsl.repository;
 
 import static com.kbs.querydsl.entity.QMember.member;
+import static com.kbs.querydsl.entity.QTeam.team;
+import static org.springframework.util.StringUtils.hasText;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
+import com.kbs.querydsl.dto.MemberSearchCond;
+import com.kbs.querydsl.dto.MemberTeamDto;
+import com.kbs.querydsl.dto.QMemberTeamDto;
 import com.kbs.querydsl.entity.Member;
-import com.querydsl.core.QueryFactory;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
@@ -58,4 +63,35 @@ public class MemberJpaRepository {
         .fetch();
   }
   
+  /**
+   * 동적쿼리 - Builder 사용
+   */
+  public List<MemberTeamDto> searchByBuilder(MemberSearchCond cond) {
+    
+    BooleanBuilder builder = new BooleanBuilder();
+    if(hasText(cond.getUsername())) {
+      builder.and(member.username.eq(cond.getUsername()));
+    }
+    if(hasText(cond.getTeamName())) {
+      builder.and(team.name.eq(cond.getTeamName()));
+    }
+    if(cond.getAgeGoe() != null) {
+      builder.and(member.age.goe(cond.getAgeGoe()));
+    }
+    if(cond.getAgeLoe() != null) {
+      builder.and(member.age.loe(cond.getAgeLoe()));
+    }
+    
+    return queryFactory
+        .select(new QMemberTeamDto(
+            member.id, 
+            member.username, 
+            member.age, 
+            team.id, 
+            team.name))
+        .from(member)
+        .leftJoin(member.team, team)
+        .where(builder)
+        .fetch();
+  }
 }
