@@ -12,6 +12,7 @@ import com.kbs.querydsl.dto.MemberTeamDto;
 import com.kbs.querydsl.dto.QMemberTeamDto;
 import com.kbs.querydsl.entity.Member;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
@@ -93,5 +94,46 @@ public class MemberJpaRepository {
         .leftJoin(member.team, team)
         .where(builder)
         .fetch();
+  }
+  
+  /**
+   * 동적쿼리 Where절 파라미터 사용
+   */
+  public List<MemberTeamDto> searchByWhere(MemberSearchCond cond) {
+    
+    return queryFactory
+         .select(new QMemberTeamDto(
+             member.id,
+             member.username,
+             member.age,
+             team.id,
+             team.name
+             ))
+         .from(member)
+         .leftJoin(member.team, team)
+         .where(
+             usernameEq(cond.getUsername()),
+             teamNameEq(cond.getTeamName()),
+             ageGoe(cond.getAgeGoe()),
+             ageLoe(cond.getAgeLoe())
+             )
+         .fetch();
+  }
+
+
+  private BooleanExpression usernameEq(String username) {
+    return hasText(username) ? member.username.eq(username) : null;
+  }
+
+  private BooleanExpression teamNameEq(String teamName) {
+    return hasText(teamName) ? team.name.eq(teamName) : null;
+  }
+
+  private BooleanExpression ageGoe(Integer ageGoe) {
+    return ageGoe != null ? member.age.goe(ageGoe) : null;
+  }
+
+  private BooleanExpression ageLoe(Integer ageLoe) {
+    return ageLoe != null ? member.age.loe(ageLoe) : null;
   }
 }
