@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.dto.MemberSearchCond;
 import com.kbs.querydsl.dto.MemberTeamDto;
@@ -14,6 +15,7 @@ import com.kbs.querydsl.entity.Member;
 import com.kbs.querydsl.entity.Team;
 
 @SpringBootTest
+@ActiveProfiles(value = "test")
 @Transactional
 class MemberJpaRepositoryTest {
 

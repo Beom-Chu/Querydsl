@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.dto.MemberDto;
 import com.kbs.querydsl.dto.QMemberDto;
@@ -36,6 +37,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 @SpringBootTest
+@ActiveProfiles(value = "test")
 @Transactional
 class QuerydslBasicTest {
 
