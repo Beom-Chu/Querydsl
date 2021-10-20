@@ -82,6 +82,41 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
     
     return new PageImpl<>(content, pageable, total);
   }
+
+  /**
+   * 최적화를 위해 내용 쿼리와 전체 Count 쿼리를 분리하는 경우
+   */
+  @Override
+  public Page<MemberTeamDto> searchPageComplex(MemberSearchCond cond, Pageable pageable) {
+    
+    List<MemberTeamDto> content = queryFactory
+        .select(new QMemberTeamDto(
+            member.id, 
+            member.username, 
+            member.age, 
+            team.id, 
+            team.name))
+        .from(member)
+        .leftJoin(member.team, team)
+        .where(usernameEq(cond.getUsername()),
+                teamNameEq(cond.getTeamName()),
+                ageGoe(cond.getAgeGoe()),
+                ageLoe(cond.getAgeLoe()))
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
+        .fetch();
+    
+    long total = queryFactory
+        .selectFrom(member)
+        .leftJoin(member.team, team)
+        .where(usernameEq(cond.getUsername()),
+            teamNameEq(cond.getTeamName()),
+            ageGoe(cond.getAgeGoe()),
+            ageLoe(cond.getAgeLoe()))
+        .fetchCount();
+    
+    return new PageImpl<>(content, pageable, total);
+  }
   
   
   
