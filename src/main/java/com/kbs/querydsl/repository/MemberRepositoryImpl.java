@@ -8,11 +8,14 @@ import javax.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import com.kbs.querydsl.dto.MemberSearchCond;
 import com.kbs.querydsl.dto.MemberTeamDto;
 import com.kbs.querydsl.dto.QMemberTeamDto;
+import com.kbs.querydsl.entity.Member;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 public class MemberRepositoryImpl implements MemberRepositoryCustom {
@@ -106,16 +109,29 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         .limit(pageable.getPageSize())
         .fetch();
     
-    long total = queryFactory
+    //내용, 카운트 쿼리 분리 기본
+//    long total = queryFactory
+//        .selectFrom(member)
+//        .leftJoin(member.team, team)
+//        .where(usernameEq(cond.getUsername()),
+//            teamNameEq(cond.getTeamName()),
+//            ageGoe(cond.getAgeGoe()),
+//            ageLoe(cond.getAgeLoe()))
+//        .fetchCount();
+//    
+//    return new PageImpl<>(content, pageable, total);
+    
+    
+    //countQuery 최적화 - count쿼리가 생략 가능한 경우 생략해서 처리
+    JPAQuery<Member> countQuery = queryFactory
         .selectFrom(member)
         .leftJoin(member.team, team)
         .where(usernameEq(cond.getUsername()),
             teamNameEq(cond.getTeamName()),
             ageGoe(cond.getAgeGoe()),
-            ageLoe(cond.getAgeLoe()))
-        .fetchCount();
+            ageLoe(cond.getAgeLoe()));
     
-    return new PageImpl<>(content, pageable, total);
+    return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchCount);
   }
   
   
