@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kbs.querydsl.dto.MemberSearchCond;
 import com.kbs.querydsl.dto.MemberTeamDto;
 import com.kbs.querydsl.entity.Member;
+import com.kbs.querydsl.entity.QMember;
 import com.kbs.querydsl.entity.Team;
 
 @SpringBootTest
@@ -148,6 +149,7 @@ class MemberRepositoryTest {
   /**
    * 페이징 활용 테스트 - complex
    */
+  @Disabled
   @Test
   public void searchPageComplexTest() {
     
@@ -176,5 +178,40 @@ class MemberRepositoryTest {
     assertThat(result.getSize()).isEqualTo(3);
     assertThat(result.getContent()).extracting("username").containsExactly("member1","member2","member3");
     
+  }
+  
+  
+  /**
+   * QuerydslPredicateExecutor 사용
+   * 
+   * * 한계점
+   * 조인X (묵시적 조인은 가능하지만 left join이 불가능하다.)
+   * 클라이언트가 Querydsl에 의존해야 한다. 서비스 클래스가 Querydsl이라는 구현 기술에 의존해야 한다.
+   * 복잡한 실무환경에서 사용하기에는 한계가 명확하다
+   */
+  @Test
+  public void QuerydslPredicateExecutorTest() {
+    
+    Team teamA = new Team("teamA");
+    Team teamB = new Team("teamB");
+    
+    em.persist(teamA);
+    em.persist(teamB);
+    
+    Member member1 = new Member("member1", 10, teamA);
+    Member member2 = new Member("member2", 20, teamA);
+    Member member3 = new Member("member3", 30, teamB);
+    Member member4 = new Member("member4", 40, teamB);
+    
+    em.persist(member1);
+    em.persist(member2);
+    em.persist(member3);
+    em.persist(member4);
+    
+    Iterable<Member> result = memberRepository.findAll(
+        QMember.member.age.between(10, 40)
+        .and(QMember.member.username.eq("member1")));
+    
+    assertThat(result).extracting("username").containsExactly("member1");
   }
 }
