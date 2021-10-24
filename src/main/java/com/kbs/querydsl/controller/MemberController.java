@@ -3,12 +3,16 @@ package com.kbs.querydsl.controller;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.kbs.querydsl.dto.MemberDto;
 import com.kbs.querydsl.dto.MemberSearchCond;
 import com.kbs.querydsl.dto.MemberTeamDto;
+import com.kbs.querydsl.entity.Member;
 import com.kbs.querydsl.repository.MemberJpaRepository;
 import com.kbs.querydsl.repository.MemberRepository;
+import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,5 +35,19 @@ public class MemberController {
   @GetMapping("/v3/members")
   public Page<MemberTeamDto> searchMemberV3(MemberSearchCond cond, Pageable pageable) {
     return memberRepository.searchPageComplex(cond, pageable);
+  }
+  
+  /**
+   * Querydsl Web 지원
+   * @param predicate
+   * @param pageable
+   * @return
+   */
+  @GetMapping("/v4/members")
+  public Page<MemberDto> searchMemberV4(@QuerydslPredicate(root = Member.class) Predicate predicate, Pageable pageable) {
+
+    Page<Member> members = memberRepository.findAll(predicate, pageable);
+
+    return members.map(o -> new MemberDto(o.getUsername(), o.getAge()));
   }
 }
